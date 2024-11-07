@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
 
+#include <queue>
+#include <utility>
+
 #include "raylib.h"
 
 
