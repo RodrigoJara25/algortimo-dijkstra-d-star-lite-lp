@@ -1,0 +1,2 @@
+def dijkstra():
+    return
