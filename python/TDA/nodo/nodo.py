@@ -1,16 +1,13 @@
 class Nodo:
-    def __init__(self, nodo_anterior=None, nodo_siguiente=None):
-        self.nodo_anterior = nodo_anterior
-        self.nodo_siguiente = nodo_siguiente
-    
-    def obtenerSiguiente(self):
-        return self.nodo_siguiente
-    
-    def establecerSiguiente(self, nodo_siguiente):
-        self.nodo_siguiente = nodo_siguiente
-    
-    def obtenerAnterior(self):
-        return self.nodo_anterior
-    
-    def establecerAnterior(self, nodo_anterior):
-        self.nodo_anterior = nodo_anterior
+    def __init__(self, vertice):
+        self.vertice = vertice # Vertice
+        self.adyacentes = {}  # Diccionario de vecinos y sus pesos
+        self.distancia = float('inf')  # Inicia con distancia infinita
+        self.predecesor = None  # Nodo previo en el camino más corto
+
+    def configurarAdyacente(self, adyacente, peso):
+        self.adyacentes[adyacente] = peso
+
+    def __repr__(self):
+        # Obtener datos sobre el nodo
+        return f"Nodo({self.vertice}, distancia={self.distancia}, predecesor={self.predecesor})"
