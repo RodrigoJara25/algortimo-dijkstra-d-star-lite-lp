@@ -3,8 +3,8 @@
 #include <tuple>
 #include <algorithm>
 #include <stdexcept>
-#include <iostream>
 #include "Nodo.h"
+#include "dijkstra.h"
 
 std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<Nodo *> &nodos, std::tuple<int, int> vertice_origen, std::tuple<int, int> vertice_destino)
 {
