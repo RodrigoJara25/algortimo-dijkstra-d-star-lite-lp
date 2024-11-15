@@ -1,3 +1,6 @@
+#ifndef NODO_H  // Check if the class is already defined
+#define NODO_H  // If not, define it
+
 #include <iostream>
 #include <tuple>
 #include <map>
@@ -11,13 +14,14 @@ private:
 
 public:
     // Constructor
-    Nodo(std:: tuple<int, int> coordenadas);
+    Nodo(std::tuple<int, int> coordenadas);
 
     // getters
     float getDistancia() const;
     Nodo* getPredecesor() const;
     std::tuple<int,int> getCoordenadas() const;
     std::map<std::tuple<int,int>, int> getAdyacentes() const;
+    
     // setters
     void setDistancia(float distancia);
     void setPredecesor(Nodo* predecesor);
@@ -26,5 +30,6 @@ public:
 
     // Methods
     void configurarAdyacente(std::tuple<int, int> coordenadas, float peso);
-
 };
+
+#endif  // End of include guard
