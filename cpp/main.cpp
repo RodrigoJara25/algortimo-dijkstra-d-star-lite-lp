@@ -1,61 +1,75 @@
 #include "raylib.h"
 #include "getResolution/getResolution.h"
 #include "dijkstra/dijkstra.h"
-#include "TDA/nodo/Nodo.h"
+#include "TDA/nodoDijkstra/NodoDijkstra.h"
+#include "dStarLite/dStarLite.h"
 #include <iostream>
 #include <vector>
 #include <limits>
-#include <unordered_set>
-#include <utility>
+#include <tuple>
+using namespace std;
 
 struct Celda
 {
     int fila;
     int columna;
-
-    // Constructor para inicializar la celda
     Celda(int f, int c) : fila(f), columna(c) {}
 };
 
+auto heuristic_fn = [](pair<int, int> start, pair<int, int> goal) -> float
+{
+    return abs(start.first - goal.first) + abs(start.second - goal.second); // Manhattan distance
+};
+
+auto prev_fn = [](pair<int, int> node) -> std::vector<pair<int, int>>
+{
+    std::vector<pair<int, int>> neighbors;
+    int x = node.first, y = node.second;
+    neighbors.push_back({x - 1, y}); // Left
+    neighbors.push_back({x + 1, y}); // Right
+    neighbors.push_back({x, y - 1}); // Up
+    neighbors.push_back({x, y + 1}); // Down
+    return neighbors;
+};
+
+auto next_fn = prev_fn; // For simplicity, using the same logic as prev_fn
+
+auto cost_fn = [](pair<int, int> a, pair<int, int> b) -> float
+{
+    return 1.0f; // Uniform cost
+};
+
+void on_expand(tuple<int, int> node)
+{
+    cout << "Expanding node: (" << std::get<0>(node) << ", " << std::get<1>(node) << ")" << endl;
+}
+
 int main()
 {
-    // Inicialización de la ventana
-    int screenWidth = 0;
-    int screenHeight = 0;
+    int screenWidth = 0, screenHeight = 0;
     GetDesktopResolution(screenWidth, screenHeight);
     InitWindow(screenWidth, screenHeight - 60, "Grilla Celeste Claro");
 
-    // Configuración de colores
-    Color colorCelda = {184, 237, 255, 255};      // Color celeste claro
-    Color colorBorde = {200, 200, 200, 255};      // Color plomo
-    Color colorCeldaBloqueada = {255, 0, 0, 255}; // Color rojo
-    Color colorCeldaOrigen = {4, 255, 0, 255};    // Color verde
-    Color colorCeldaDestino = {255, 234, 0, 255}; // Color amarillo
-    Color colorCamino = {0, 0, 255, 255};         // Color azul
+    Color colorCelda = {184, 237, 255, 255};
+    Color colorBorde = {200, 200, 200, 255};
+    Color colorCeldaBloqueada = {255, 0, 0, 255};
+    Color colorCeldaOrigen = {4, 255, 0, 255};
+    Color colorCeldaDestino = {255, 234, 0, 255};
+    Color colorCamino = {0, 0, 255, 255};
 
-    std::vector<std::pair<int, int>> desplazamientos = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    // Parámetros de la grilla
-    int columnas = 20;
-    int filas = 15;
+    std::vector<std::tuple<int, int>> desplazamientos = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int columnas = 20, filas = 15;
     int tamanoCeldaAncho = screenWidth / columnas;
-    int tamanoCeldaAlto = (screenHeight - 60)  / filas;
+    int tamanoCeldaAlto = (screenHeight - 60) / filas;
 
-    // Inicialización de la grilla
     std::vector<std::vector<Color>> celdas(filas, std::vector<Color>(columnas, colorCelda));
-
-    // Conjunto de celdas bloqueadas (usamos un unordered_set para eficiencia en búsquedas)
     std::vector<Celda> celdas_bloqueadas;
-
-    // Variables de celdas especiales
-    std::tuple<int, int> celdaOrigen = {-1, -1};
-    std::tuple<int, int> celdaDestino = {-1, -1};
+    tuple<int, int> celdaOrigen = {-1, -1};
+    tuple<int, int> celdaDestino = {-1, -1};
     bool modoEdicion = false;
 
-    // Bucle principal
     while (!WindowShouldClose())
     {
-        // Manejo de entrada
         if (IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL))
         {
             modoEdicion = !modoEdicion;
@@ -63,8 +77,7 @@ int main()
 
         if (IsKeyPressed(KEY_ENTER))
         {
-
-            std::vector<Nodo *> nodos;
+            std::vector<NodoDijkstra *> nodos;
             for (int i = 0; i < filas; i++)
             {
                 for (int j = 0; j < columnas; j++)
@@ -73,7 +86,7 @@ int main()
                     std::tuple<int, int> coordenadas = {i, j};
 
                     // Crear el nodo con las coordenadas actuales
-                    Nodo *nodo = new Nodo(coordenadas);
+                    NodoDijkstra *nodo = new NodoDijkstra(coordenadas);
 
                     // Recorrer los posibles desplazamientos (adyacentes)
                     for (auto &[dx, dy] : desplazamientos)
@@ -135,7 +148,27 @@ int main()
             }
         }
 
-        // Detección del clic y posición del mouse en la grilla
+        if (IsKeyPressed(KEY_SPACE))
+        {
+            pair<int, int> origen = make_pair(std::get<0>(celdaOrigen), std::get<1>(celdaOrigen));
+            pair<int, int> destino = make_pair(std::get<0>(celdaDestino), std::get<1>(celdaDestino));
+
+            DStarLite dstar(heuristic_fn, prev_fn, next_fn, cost_fn);
+            std::vector<std::pair<int, int>> path;
+            std::vector<std::pair<int, int>> celdas_bloqueadas_pairs;
+            for (const auto &celda : celdas_bloqueadas)
+            {
+                celdas_bloqueadas_pairs.push_back({celda.fila, celda.columna});
+            }
+
+            path = dstar.plan(origen, destino, on_expand, celdas_bloqueadas_pairs);
+
+            for (const auto &p : path)
+            {
+                celdas[p.first][p.second] = colorCamino;
+            }
+        }
+
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
             int xMouse = GetMouseX() / tamanoCeldaAncho;
@@ -170,32 +203,22 @@ int main()
             }
         }
 
-        // Comienzo del dibujo
         BeginDrawing();
-        ClearBackground(RAYWHITE); // Limpia la pantalla con un color de fondo
+        ClearBackground(RAYWHITE);
 
-        // Dibujar la grilla
-        for (int y = 0; y < filas; y++)
+        for (int i = 0; i < filas; i++)
         {
-            for (int x = 0; x < columnas; x++)
+            for (int j = 0; j < columnas; j++)
             {
-                // Calcula la posición de cada celda
-                int posX = x * tamanoCeldaAncho;
-                int posY = y * tamanoCeldaAlto;
-
-                // Dibuja el fondo de la celda
-                DrawRectangle(posX, posY, tamanoCeldaAncho, tamanoCeldaAlto, celdas[y][x]);
-
-                // Dibuja el borde de la celda
-                DrawRectangleLines(posX, posY, tamanoCeldaAncho, tamanoCeldaAlto, colorBorde);
+                DrawRectangle(j * tamanoCeldaAncho, i * tamanoCeldaAlto, tamanoCeldaAncho, tamanoCeldaAlto, celdas[i][j]);
+                DrawRectangleLines(j * tamanoCeldaAncho, i * tamanoCeldaAlto, tamanoCeldaAncho, tamanoCeldaAlto, colorBorde);
             }
         }
 
-        EndDrawing(); // Actualiza la pantalla con los dibujos realizados
+        DrawText("Presiona CTRL para cambiar a modo edicion", 10, screenHeight - 50, 20, BLACK);
+        EndDrawing();
     }
 
-    // Finaliza la ventana
     CloseWindow();
-
     return 0;
 }

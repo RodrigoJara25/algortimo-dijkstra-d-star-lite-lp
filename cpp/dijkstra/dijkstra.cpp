@@ -3,13 +3,13 @@
 #include <tuple>
 #include <algorithm>
 #include <stdexcept>
-#include "../TDA/nodo/Nodo.h"
+#include "../TDA/nodoDijkstra/NodoDijkstra.h"
 #include "dijkstra.h"
 
-std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<Nodo *> &nodos, std::tuple<int, int> vertice_origen, std::tuple<int, int> vertice_destino)
+std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<NodoDijkstra *> &nodos, std::tuple<int, int> vertice_origen, std::tuple<int, int> vertice_destino)
 {
-    Nodo *origen = nullptr;
-    Nodo *destino = nullptr;
+    NodoDijkstra *origen = nullptr;
+    NodoDijkstra *destino = nullptr;
     std::cout << "FAdadaDA";
     for (auto &nodo : nodos)
     {
@@ -33,14 +33,14 @@ std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<Nodo *>
 
     origen->setDistancia(0);
 
-    std::vector<Nodo *> unexplored = nodos;
+    std::vector<NodoDijkstra *> unexplored = nodos;
 
     while (!unexplored.empty())
     {
         auto min_it = std::min_element(unexplored.begin(), unexplored.end(),
-                                       [](Nodo *a, Nodo *b)
+                                       [](NodoDijkstra *a, NodoDijkstra *b)
                                        { return a->getDistancia() < b->getDistancia(); });
-        Nodo *v = *min_it;
+        NodoDijkstra *v = *min_it;
         // std::cout << "Vertice usando : " << std::get<0>(v->getCoordenadas()) << " " << std::get<1>(v->getCoordenadas()) << '\n';
 
         // std::cout << "Adyacentes: " << '\n';
@@ -61,7 +61,7 @@ std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<Nodo *>
         for (const auto &[coordenadas, peso] : v->getAdyacentes())
         {
 
-            Nodo *adyacente = nullptr;
+            NodoDijkstra *adyacente = nullptr;
             for (auto &nodo : nodos)
             {
                 if (nodo->getCoordenadas() == coordenadas)
@@ -85,7 +85,7 @@ std::pair<std::vector<std::tuple<int, int>>, float> dijkstra(std::vector<Nodo *>
     
 
     std::vector<std::tuple<int, int>> camino;
-    Nodo *nodo_actual = destino;
+    NodoDijkstra *nodo_actual = destino;
     while (nodo_actual != nullptr)
     {
 
