@@ -1,4 +1,4 @@
-class Nodo:
+class NodoDijkstra:
     def __init__(self, vertice):
         self.vertice = vertice # Vertice
         self.adyacentes = {}  # Diccionario de vecinos y sus pesos
@@ -8,6 +8,3 @@ class Nodo:
     def configurarAdyacente(self, adyacente, peso):
         self.adyacentes[adyacente] = peso
 
-    def __repr__(self):
-        # Obtener datos sobre el nodo
-        return f"Nodo({self.vertice}, distancia={self.distancia}, predecesor={self.predecesor})"

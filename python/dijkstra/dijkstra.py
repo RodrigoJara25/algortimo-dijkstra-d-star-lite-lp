@@ -1,4 +1,4 @@
-def dijkstra(nodos, vertice_origen, vertice_destino):
+def Dijkstra(nodos, vertice_origen, vertice_destino):
     # Busca el nodo de origen y el nodo de destino por posición
     origen = next((nodo for nodo in nodos if nodo.vertice == vertice_origen), None)
     destino = next((nodo for nodo in nodos if nodo.vertice == vertice_destino), None)
