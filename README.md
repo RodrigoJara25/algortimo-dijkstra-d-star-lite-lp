@@ -13,6 +13,7 @@ Ejecutar algoritmo en Python:
  2- Instalar Pygame (Ejecutar en erminal: pip install pygame)
  
  3- Colocarse dentro del directorio donde se encuentra el main.py y ejecutar desde la terminal (python main.py)
+ 
 
  Ejecutar algoritmo en C++:
  
