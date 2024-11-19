@@ -9,6 +9,9 @@
 #include <tuple>
 using namespace std;
 
+#include <chrono>
+using namespace std::chrono;
+
 struct Celda
 {
     int fila;
@@ -169,6 +172,7 @@ int main()
 
         if (IsKeyPressed(KEY_SPACE))
         {
+            auto tiempoInicio = high_resolution_clock::now();
             if (std::get<0>(celdaOrigen) == -1 || std::get<1>(celdaDestino) == -1) {
                     std::cout << "Selecciona un origen y destino válidos antes de ejecutar el algoritmo.\n";
                 } else {
@@ -199,7 +203,6 @@ int main()
                     auto heuristica = [](int x1, int y1, int x2, int y2) {
                         return abs(x1 - x2) + abs(y1 - y2); // Distancia de Manhattan
                     };
-
                     // Función para obtener vecinos
                     auto obtenerVecinos = [&](int x, int y) {
                         std::vector<std::pair<int, int>> vecinos;
@@ -265,6 +268,9 @@ int main()
 
                     std::cout << "Camino encontrado y pintado.\n";
                 }
+                auto tiempoFin = high_resolution_clock::now();
+                auto duracion = duration_cast<microseconds>(tiempoFin - tiempoInicio).count();
+                cout << "Tiempo de inicialización: " << (duracion/1000000.0f) << " segundos" << endl;
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
