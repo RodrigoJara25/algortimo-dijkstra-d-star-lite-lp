@@ -257,7 +257,10 @@ int main()
 
                     // Pintar el camino en la grilla
                     for (const auto& [px, py] : camino) {
-                        celdas[px][py] = colorCamino; // Define un color para el camino
+                        if (!(px == std::get<0>(celdaOrigen) && py == std::get<1>(celdaOrigen)) &&
+                            !(px == std::get<0>(celdaDestino) && py == std::get<1>(celdaDestino))) {
+                            celdas[px][py] = colorCamino; // Define un color para el camino
+                        }
                     }
 
                     std::cout << "Camino encontrado y pintado.\n";
