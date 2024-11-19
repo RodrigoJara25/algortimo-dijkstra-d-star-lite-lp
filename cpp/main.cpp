@@ -49,6 +49,7 @@ int main()
     int screenWidth = 0, screenHeight = 0;
     GetDesktopResolution(screenWidth, screenHeight);
     InitWindow(screenWidth, screenHeight - 60, "Grilla Celeste Claro");
+    SetExitKey(KEY_Q);
 
     Color colorCelda = {184, 237, 255, 255};
     Color colorBorde = {200, 200, 200, 255};
@@ -70,6 +71,24 @@ int main()
 
     while (!WindowShouldClose())
     {
+        if (IsKeyPressed(KEY_ESCAPE)) 
+        {
+            // Restablece todas las celdas al color original
+            for (int i = 0; i < filas; i++) 
+            {
+                for (int j = 0; j < columnas; j++) 
+                {
+                    celdas[i][j] = colorCelda;
+                }
+            }
+
+            // Limpia las celdas bloqueadas y resetea origen y destino
+            celdas_bloqueadas.clear();
+            celdaOrigen = {-1, -1};
+            celdaDestino = {-1, -1};
+
+            std::cout << "Grilla reiniciada\n";
+        }
         if (IsKeyPressed(KEY_LEFT_CONTROL) || IsKeyPressed(KEY_RIGHT_CONTROL))
         {
             modoEdicion = !modoEdicion;
