@@ -169,23 +169,99 @@ int main()
 
         if (IsKeyPressed(KEY_SPACE))
         {
-            pair<int, int> origen = make_pair(std::get<0>(celdaOrigen), std::get<1>(celdaOrigen));
-            pair<int, int> destino = make_pair(std::get<0>(celdaDestino), std::get<1>(celdaDestino));
+            if (std::get<0>(celdaOrigen) == -1 || std::get<1>(celdaDestino) == -1) {
+                    std::cout << "Selecciona un origen y destino válidos antes de ejecutar el algoritmo.\n";
+                } else {
+                    const int INF = 1e9; // Representa "infinito"
+                    const int filas = 20; // Tamaño de la grilla (ejemplo)
+                    const int columnas = 20;
 
-            DStarLite dstar(heuristic_fn, prev_fn, next_fn, cost_fn);
-            std::vector<std::pair<int, int>> path;
-            std::vector<std::pair<int, int>> celdas_bloqueadas_pairs;
-            for (const auto &celda : celdas_bloqueadas)
-            {
-                celdas_bloqueadas_pairs.push_back({celda.fila, celda.columna});
-            }
+                    // Inicializa la grilla y los pesos
+                    std::vector<std::vector<int>> costos(filas, std::vector<int>(columnas, 1)); // Todos los pesos son 1 inicialmente
+                    for (const auto& bloqueada : celdas_bloqueadas) {
+                        costos[bloqueada.fila][bloqueada.columna] = INF; // Marca celdas bloqueadas
+                    }
 
-            path = dstar.plan(origen, destino, on_expand, celdas_bloqueadas_pairs);
+                    // Variables necesarias
+                    std::priority_queue<std::tuple<int, int, int>, std::vector<std::tuple<int, int, int>>, std::greater<>> openList;
+                    std::vector<std::vector<int>> g_values(filas, std::vector<int>(columnas, INF));
+                    std::vector<std::vector<int>> rhs_values(filas, std::vector<int>(columnas, INF));
+                    std::vector<std::vector<bool>> visited(filas, std::vector<bool>(columnas, false));
 
-            for (const auto &p : path)
-            {
-                celdas[p.first][p.second] = colorCamino;
-            }
+                    // Coordenadas de origen y destino
+                    int xOrigen = std::get<0>(celdaOrigen), yOrigen = std::get<1>(celdaOrigen);
+                    int xDestino = std::get<0>(celdaDestino), yDestino = std::get<1>(celdaDestino);
+
+                    // Inicialización
+                    rhs_values[xDestino][yDestino] = 0; // rhs del destino es 0
+                    openList.push({0, xDestino, yDestino}); // Agrega el destino a la lista abierta
+
+                    auto heuristica = [](int x1, int y1, int x2, int y2) {
+                        return abs(x1 - x2) + abs(y1 - y2); // Distancia de Manhattan
+                    };
+
+                    // Función para obtener vecinos
+                    auto obtenerVecinos = [&](int x, int y) {
+                        std::vector<std::pair<int, int>> vecinos;
+                        if (x > 0) vecinos.push_back({x - 1, y});
+                        if (x < filas - 1) vecinos.push_back({x + 1, y});
+                        if (y > 0) vecinos.push_back({x, y - 1});
+                        if (y < columnas - 1) vecinos.push_back({x, y + 1});
+                        return vecinos;
+                    };
+
+                    // Actualiza el valor de una celda
+                    auto actualizar = [&](int x, int y) {
+                        if (x == xDestino && y == yDestino) return;
+                        int min_rhs = INF;
+                        for (const auto& [nx, ny] : obtenerVecinos(x, y)) {
+                            min_rhs = std::min(min_rhs, g_values[nx][ny] + costos[nx][ny]);
+                        }
+                        rhs_values[x][y] = min_rhs;
+                        openList.push({rhs_values[x][y] + heuristica(x, y, xOrigen, yOrigen), x, y});
+                    };
+
+                    // Algoritmo principal
+                    while (!openList.empty()) {
+                        auto [_, x, y] = openList.top();
+                        openList.pop();
+
+                        if (visited[x][y]) continue;
+                        visited[x][y] = true;
+
+                        if (g_values[x][y] != rhs_values[x][y]) {
+                            g_values[x][y] = rhs_values[x][y];
+                            for (const auto& [nx, ny] : obtenerVecinos(x, y)) {
+                                actualizar(nx, ny);
+                            }
+                        }
+                    }
+
+                    // Reconstrucción del camino
+                    std::vector<std::pair<int, int>> camino;
+                    int cx = xOrigen, cy = yOrigen;
+                    while (!(cx == xDestino && cy == yDestino)) {
+                        camino.push_back({cx, cy});
+                        int min_cost = INF;
+                        std::pair<int, int> siguiente = {cx, cy};
+                        for (const auto& [nx, ny] : obtenerVecinos(cx, cy)) {
+                            if (g_values[nx][ny] < min_cost) {
+                                min_cost = g_values[nx][ny];
+                                siguiente = {nx, ny};
+                            }
+                        }
+                        cx = siguiente.first;
+                        cy = siguiente.second;
+                    }
+                    camino.push_back({xDestino, yDestino});
+
+                    // Pintar el camino en la grilla
+                    for (const auto& [px, py] : camino) {
+                        celdas[px][py] = colorCamino; // Define un color para el camino
+                    }
+
+                    std::cout << "Camino encontrado y pintado.\n";
+                }
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
